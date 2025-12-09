@@ -6,7 +6,33 @@ import math
 import os
 
 # ==========================================
-# 0. モダンUI用カスタムCSS設定 (絵文字なし・シンプル版)
+# 0. パスワード認証機能
+# ==========================================
+def check_password():
+    """合言葉を知っている人だけ通す検問"""
+    if "auth" not in st.session_state:
+        st.session_state.auth = False
+
+    if st.session_state.auth:
+        return
+
+    st.title("🔒 ログイン")
+    password = st.text_input("合言葉を入力してください", type="password")
+    
+    if password:
+        # secrets.toml (またはCloudのSecrets) から正解を取得
+        if "PASSWORD" in st.secrets and password == st.secrets["PASSWORD"]:
+            st.session_state.auth = True
+            st.rerun()
+        else:
+            st.error("パスワードが違います")
+            
+    # 認証未完了ならここでストップ
+    if not st.session_state.auth:
+        st.stop()
+
+# ==========================================
+# 1. モダンUI用カスタムCSS設定 (白×赤)
 # ==========================================
 CUSTOM_CSS = """
 <style>
@@ -69,8 +95,8 @@ PRICE_USD = 20.00
 def load_data():
     default_data = {
         "history": {}, 
-        "members": ["A", "B", "C", "D", "E"], 
-        "contractor": "A",
+        "members": ["永野", "西村", "箸方", "下地", "稲毛"], 
+        "contractor": "永野",
         "payment_link": ""
     }
     if os.path.exists(JSON_FILE):
@@ -101,6 +127,11 @@ def get_rate():
 # アプリ本体
 # ==========================================
 st.set_page_config(page_title="ChatGPT Split", layout="wide")
+
+# ★ここで検問実施
+check_password()
+
+# 通過したらCSS適用
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 data = load_data()
@@ -144,10 +175,9 @@ with st.sidebar:
             save_data(data)
             st.rerun()
 
-    # ★★★ ここに月削除機能を復活させました ★★★
+    # 月削除機能
     with st.expander("月データの削除"):
         if history:
-            # 間違えて追加した「最新の月」を消しやすいように、逆順（新しい順）で表示
             sorted_months_rev = sorted(history.keys(), reverse=True)
             target_month = st.selectbox("削除する月を選択", sorted_months_rev)
             
@@ -165,7 +195,7 @@ rate = get_rate()
 total_yen = int(PRICE_USD * rate)
 per_head = math.ceil((total_yen / len(members)) / 10) * 10 if members else 0
 
-st.title(f"ChatGPT 集金所 ")
+st.title(f"ChatGPT 集金所 ({contractor})")
 
 # 1. 概要
 col1, col2, col3 = st.columns(3)
@@ -175,7 +205,7 @@ col3.metric("1人あたりの支払額", f"{per_head:,} 円/月", delta="10円�
 
 st.divider()
 
-# 2. 未払い額計算
+# 2. 未払い額計算（未来月無視ロジック）
 if not history:
     init_month = datetime.datetime.now().strftime("%Y-%m")
     history = {init_month: []}
