@@ -69,8 +69,8 @@ PRICE_USD = 20.00
 def load_data():
     default_data = {
         "history": {}, 
-        "members": ["永野", "西村", "箸方", "下地", "稲毛"], 
-        "contractor": "永野",
+        "members": ["A", "B", "C", "D", "E"], 
+        "contractor": "A",
         "payment_link": ""
     }
     if os.path.exists(JSON_FILE):
@@ -165,7 +165,7 @@ rate = get_rate()
 total_yen = int(PRICE_USD * rate)
 per_head = math.ceil((total_yen / len(members)) / 10) * 10 if members else 0
 
-st.title(f"ChatGPT 集金所 ({contractor})")
+st.title(f"ChatGPT 集金所 ")
 
 # 1. 概要
 col1, col2, col3 = st.columns(3)
