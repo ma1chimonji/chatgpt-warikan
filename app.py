@@ -16,7 +16,7 @@ def check_password():
     if st.session_state.auth:
         return
 
-    st.title("🔒 ログイン")
+    st.title("ログイン")
     password = st.text_input("合言葉を入力してください", type="password")
     
     if password:
@@ -195,7 +195,7 @@ rate = get_rate()
 total_yen = int(PRICE_USD * rate)
 per_head = math.ceil((total_yen / len(members)) / 10) * 10 if members else 0
 
-st.title(f"ChatGPT 集金所 ({contractor})")
+st.title(f"ChatGPT 集金所")
 
 # 1. 概要
 col1, col2, col3 = st.columns(3)
